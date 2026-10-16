@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">טורבו קארט</string>
+    <string name="tagline">מרוצים בקצב אחר</string>
+    <string name="start_race">התחל מרוץ</string>
+    <string name="championships">אליפויות</string>
+    <string name="my_garage">המוסך שלי</string>
+    <string name="select_track">בחירת מסלול</string>
+    <string name="track_editor">עורך מסלולים</string>
+    <string name="my_records">השיאים שלי</string>
+    <string name="settings">הגדרות</string>
+</resources>

@@ -1,0 +1,50 @@
+[gd_scene load_steps=5 format=3 uid="uid://df2k9v04k3x1m"]
+
+[ext_resource type="Script" path="res://scripts/car_controller.gd" id="1_car"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_body"]
+size = Vector3(1.8, 1.0, 3.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(1.7, 0.8, 2.8)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_wheel"]
+top_radius = 0.4
+bottom_radius = 0.4
+height = 0.35
+
+[node name="Car" type="CharacterBody3D"]
+script = ExtResource("1_car")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_body")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_body")
+
+[node name="Wheels" type="Node3D" parent="."]
+
+[node name="FL" type="MeshInstance3D" parent="Wheels"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.95, 0.35, -1.0)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="FR" type="MeshInstance3D" parent="Wheels"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.95, 0.35, -1.0)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="RL" type="MeshInstance3D" parent="Wheels"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.95, 0.35, 1.0)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="RR" type="MeshInstance3D" parent="Wheels"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.95, 0.35, 1.0)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="CameraMount" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 2.5, 5.0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraMount"]
+current = true
+fov = 65.0

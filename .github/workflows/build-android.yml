@@ -1,0 +1,127 @@
+name: Build Turbo Kart Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  GODOT_VERSION: "4.3"
+  GODOT_RELEASE: "stable"
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android Build Tools and Platforms
+        run: |
+          sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Download Godot Engine & Templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
+          unzip -q Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
+          sudo mv Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64 /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_export_templates.tpz
+          unzip -q Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_export_templates.tpz
+          mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+
+      - name: Configure Keystore / Debug Keystore
+        id: keystore-setup
+        run: |
+          mkdir -p build/android
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "Using production Release Keystore from GitHub Secrets..."
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > build/android/release.keystore
+            echo "SIGNED_RELEASE=true" >> $GITHUB_ENV
+          else
+            echo "Release secrets not provided. Generating standard Android debug keystore..."
+            keytool -keyalg RSA -genkeypair -alias androiddebugkey \
+              -keypass android -keystore build/android/debug.keystore \
+              -storepass android -dname "CN=Android Debug,O=Android,C=US" \
+              -validity 10000 -deststoretype pkcs12
+            echo "SIGNED_RELEASE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Godot Project Export Configuration
+        run: |
+          mkdir -p godot_project/build
+          # Ensure export_presets.cfg exists in project root or godot_project
+          if [ -d "godot_project" ]; then
+            cd godot_project
+          fi
+          godot --headless --editor --quit || true
+
+      - name: Export Android APK (TurboKart.apk)
+        run: |
+          TARGET_DIR="godot_project"
+          if [ ! -d "$TARGET_DIR" ]; then
+            TARGET_DIR="."
+          fi
+          cd $TARGET_DIR
+          mkdir -p build
+          godot --headless --export-debug "Android" build/TurboKart.apk
+
+      - name: Verify APK Generated
+        run: |
+          if [ -f "godot_project/build/TurboKart.apk" ]; then
+            echo "APK generated successfully at godot_project/build/TurboKart.apk"
+            ls -lh godot_project/build/TurboKart.apk
+          elif [ -f "build/TurboKart.apk" ]; then
+            echo "APK generated successfully at build/TurboKart.apk"
+            ls -lh build/TurboKart.apk
+          else
+            echo "Error: TurboKart.apk was not found!"
+            exit 1
+          fi
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TurboKart-APK
+          path: |
+            godot_project/build/TurboKart.apk
+            build/TurboKart.apk
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            godot_project/build/TurboKart.apk
+            build/TurboKart.apk
+          name: "Turbo Kart ${{ github.ref_name }}"
+          body: |
+            # 🏎️ טורבו קארט — גרסה ${{ github.ref_name }}
+            
+            משחק מרוצים תלת־ממדי מקצועי לאנדרואיד:
+            - 20 מכוניות קארט ייחודיות ושדרוגים
+            - 36 מסלולים מרהיבים ב-12 עולמות
+            - 10 כוחות מיוחדים (טורבו, מגן, קרח, טילים ועוד)
+            - יריבי AI חכמים
+            - עורך מסלולים אינטראקטיבי
+            - ממשק מלא בעברית (Landscape)
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
