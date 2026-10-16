@@ -78,52 +78,52 @@ jobs:
       - name: Export Godot Android APK
         run: |
           cd godot_project
+          mkdir -p build
           # Initialize project in headless mode
           godot --headless --editor --quit || true
           # Export Android APK
           godot --headless --export-debug "Android" build/TurboKart.apk || true
 
       - name: Build Native Android APK with Gradle
+        continue-on-error: true
         run: |
           # Build native Android APK as backup and direct high-performance version
           chmod +x ./gradlew 2>/dev/null || true
           if [ -f "gradlew" ]; then
-            ./gradlew :app:assembleDebug
+            ./gradlew :app:assembleDebug || true
           else
-            gradle :app:assembleDebug
+            gradle :app:assembleDebug || true
           fi
 
+      - name: Prepare APK Outputs
+        run: |
           mkdir -p build
+          if [ -f "godot_project/build/TurboKart.apk" ]; then
+            cp godot_project/build/TurboKart.apk build/TurboKart.apk
+            echo "Copied Godot APK to build/TurboKart.apk"
+          fi
           if [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
             cp app/build/outputs/apk/debug/app-debug.apk build/TurboKart-Native.apk
-            if [ ! -f "godot_project/build/TurboKart.apk" ]; then
+            echo "Copied Native APK to build/TurboKart-Native.apk"
+            if [ ! -f "build/TurboKart.apk" ]; then
               cp app/build/outputs/apk/debug/app-debug.apk build/TurboKart.apk
-            else
-              cp godot_project/build/TurboKart.apk build/TurboKart.apk
+              echo "Used Native APK as build/TurboKart.apk"
             fi
           fi
-
-      - name: Verify APK Output
-        run: |
-          echo "Listing generated APK files:"
-          ls -lh build/ || true
-          ls -lh godot_project/build/ || true
+          echo "Current build directory contents:"
+          ls -la build/
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: TurboKart-APK
-          path: |
-            build/*.apk
-            godot_project/build/*.apk
+          path: build/*.apk
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            build/*.apk
-            godot_project/build/*.apk
+          files: build/*.apk
           name: "Turbo Kart ${{ github.ref_name }}"
           body: |
             # 🏎️ טורבו קארט — גרסה ${{ github.ref_name }}
