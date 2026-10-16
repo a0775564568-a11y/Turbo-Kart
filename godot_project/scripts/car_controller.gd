@@ -24,7 +24,7 @@ var stunt_count: int = 0
 @onready var wheel_fr: Node3D = $Wheels/FR
 @onready var wheel_rl: Node3D = $Wheels/RL
 @onready var wheel_rr: Node3D = $Wheels/RR
-@onready var turbo_particles: GPUParticles3D = $TurboParticles
+@onready var turbo_particles: Node = get_node_or_null("TurboParticles")
 
 signal stunt_completed(toast_text: String, turbo_boost: float)
 

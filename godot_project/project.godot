@@ -14,7 +14,12 @@ config/name_localized={
 config/description="משחק מרוצים תלת־ממדי ארקיידי לאנדרואיד בהשראת Beach Buggy Racing 2"
 run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.3", "Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
+boot_splash/image="res://splash.png"
+boot_splash/fullsize=true
+boot_splash/use_filter=true
+boot_splash/bg_color=Color(0.0588235, 0.0901961, 0.164706, 1)
+boot_splash/show_image=true
 
 [display]
 

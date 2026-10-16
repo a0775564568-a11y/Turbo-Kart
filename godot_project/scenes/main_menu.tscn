@@ -1,6 +1,29 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8y4k7v0j3f2q"]
+[gd_scene load_steps=7 format=3 uid="uid://b8y4k7v0j3f2q"]
 
-[ext_resource type="Script" path="res://scripts/car_controller.gd" id="1_c8w3a"]
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_car"]
+albedo_color = Color(1, 0.35, 0.1, 1)
+metallic = 0.6
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = SubResource("StandardMaterial3D_car")
+size = Vector3(1.8, 0.8, 3.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wheel"]
+albedo_color = Color(0.12, 0.12, 0.12, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_wheel"]
+material = SubResource("StandardMaterial3D_wheel")
+top_radius = 0.45
+bottom_radius = 0.45
+height = 0.35
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_disc"]
+top_radius = 2.5
+bottom_radius = 2.5
+height = 0.1
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -9,27 +32,71 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_menu")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0588235, 0.0901961, 0.164706, 1)
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0.8, 2.5, 5.5)
+current = true
+fov = 50.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 10, 0)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="CarPivot" type="Node3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 0)
+
+[node name="Platform" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CarPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("CylinderMesh_disc")
+
+[node name="Body" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CarPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+mesh = SubResource("BoxMesh_body")
+
+[node name="WheelFL" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CarPivot"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.0, 0.45, -1.1)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="WheelFR" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CarPivot"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 1.0, 0.45, -1.1)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="WheelRL" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CarPivot"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.0, 0.45, 1.1)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="WheelRR" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CarPivot"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 1.0, 0.45, 1.1)
+mesh = SubResource("CylinderMesh_wheel")
 
 [node name="Title" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -200.0
-offset_top = 40.0
-offset_right = 200.0
-offset_bottom = 120.0
+offset_left = -250.0
+offset_top = 35.0
+offset_right = 250.0
+offset_bottom = 105.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 54
+theme_override_colors/font_color = Color(1, 0.6, 0.1, 1)
+theme_override_font_sizes/font_size = 52
 text = "טורבו קארט"
 horizontal_alignment = 1
 
@@ -38,13 +105,13 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -150.0
-offset_top = 115.0
-offset_right = 150.0
-offset_bottom = 155.0
+offset_left = -200.0
+offset_top = 98.0
+offset_right = 200.0
+offset_bottom = 135.0
 grow_horizontal = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(0, 0.898, 1, 1)
 text = "מרוצים בקצב אחר"
 horizontal_alignment = 1
 
@@ -55,31 +122,43 @@ anchor_top = 0.5
 anchor_bottom = 0.5
 offset_left = 60.0
 offset_top = -140.0
-offset_right = 280.0
-offset_bottom = 180.0
+offset_right = 320.0
+offset_bottom = 210.0
 grow_vertical = 2
 theme_override_constants/separation = 12
 
 [node name="StartRace" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "התחל מרוץ"
 
 [node name="Championships" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+theme_override_font_sizes/font_size = 18
 text = "אליפויות"
 
 [node name="Garage" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+theme_override_font_sizes/font_size = 18
 text = "המוסך שלי"
 
 [node name="TrackSelect" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+theme_override_font_sizes/font_size = 18
 text = "בחירת מסלול"
 
 [node name="TrackEditor" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+theme_override_font_sizes/font_size = 18
 text = "עורך מסלולים"
 
 [node name="Settings" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+theme_override_font_sizes/font_size = 18
 text = "הגדרות"
