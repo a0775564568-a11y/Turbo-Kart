@@ -30,7 +30,6 @@ jobs:
       - name: Accept Android SDK Licenses
         run: |
           echo "Using pre-installed Android SDK at $ANDROID_HOME"
-          # Modern Android SDK uses cmdline-tools without the deprecated 'tools' package
           if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
           elif [ -d "$ANDROID_HOME/tools/bin" ]; then
@@ -68,15 +67,13 @@ jobs:
       - name: Configure Godot Editor Settings for Android Export
         run: |
           mkdir -p ~/.config/godot
-          cat << EOF > ~/.config/godot/editor_settings-4.tres
-[gd_resource type="EditorSettings" format=3]
-
-[resource]
-export/android/android_sdk_path = "$ANDROID_HOME"
-export/android/debug_keystore = "$GITHUB_WORKSPACE/godot_project/build/debug.keystore"
-export/android/debug_user = "androiddebugkey"
-export/android/debug_password = "android"
-EOF
+          echo '[gd_resource type="EditorSettings" format=3]' > ~/.config/godot/editor_settings-4.tres
+          echo '' >> ~/.config/godot/editor_settings-4.tres
+          echo '[resource]' >> ~/.config/godot/editor_settings-4.tres
+          echo "export/android/android_sdk_path = \"$ANDROID_HOME\"" >> ~/.config/godot/editor_settings-4.tres
+          echo "export/android/debug_keystore = \"$GITHUB_WORKSPACE/godot_project/build/debug.keystore\"" >> ~/.config/godot/editor_settings-4.tres
+          echo 'export/android/debug_user = "androiddebugkey"' >> ~/.config/godot/editor_settings-4.tres
+          echo 'export/android/debug_password = "android"' >> ~/.config/godot/editor_settings-4.tres
 
       - name: Export Godot Android APK
         run: |
